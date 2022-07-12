@@ -1,19 +1,14 @@
 package ru.javarush.cryptoanalyser.likhter.commands;
 
 import ru.javarush.cryptoanalyser.likhter.entity.Result;
-import ru.javarush.cryptoanalyser.likhter.exeption.ApplicationExeption;
-import ru.javarush.cryptoanalyser.likhter.util.PathFinder;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 public class Decoder implements Action{
     @Override
     public Result execute(String[] parameters) {
-        //TODO logic, and Result message
 
-        return null;
+        String inputFile = parameters[0];
+        String outputFile = parameters[1];
+        int key = Integer.parseInt(parameters[2]);
+        return fileCopy(inputFile, outputFile, -1 * key);
     }
 }
