@@ -3,6 +3,7 @@ package ru.javarush.cryptoanalyser.likhter.toplevel;
 import ru.javarush.cryptoanalyser.likhter.entity.Result;
 import ru.javarush.cryptoanalyser.likhter.controller.MainController;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class CommandBuilder {
     private final MainController mainController;

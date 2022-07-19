@@ -20,8 +20,8 @@ public class Analyse implements Action{
         String encodeFile = parameters[0];
         String dictionaryFile = parameters[1];
         String analyzedFile = parameters[2];
-        List<Character> dictChar = getSortedChars(dictionaryFile);
         List<Character> sourceChar = getSortedChars(encodeFile);
+        List<Character> dictChar = getSortedChars(dictionaryFile);
         Path source = PathFinder.getRoot(encodeFile);
         Path target = PathFinder.getRoot(analyzedFile);
         try (

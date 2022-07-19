@@ -26,9 +26,8 @@ public class BruteForce implements Action {
                 key = keyCount;
             }
         }
-        System.out.println(key);
         fileWriter(input, output, key);
-        return new Result(ResultCode.OK, "BruteForce use key: " + key + " and write all bytes to " + parameters[1]);
+        return new Result(ResultCode.OK, "BruteForce use key: " + key);
     }
     private int countCharInFile(Path input, int key, char space) {
         int spaceCount = 0;
@@ -40,7 +39,6 @@ public class BruteForce implements Action {
                     int index = Alphabet.ALPHABET_MAP.get(character);
                     index = (index + key + Alphabet.ALPHABET_ARRAY.length) % Alphabet.ALPHABET_ARRAY.length;
                     if (Alphabet.ALPHABET_ARRAY[index] == space) {
-                        System.out.println(spaceCount);
                         spaceCount++;
                     }
                 }
