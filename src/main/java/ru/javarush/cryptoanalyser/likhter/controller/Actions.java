@@ -1,16 +1,12 @@
 package ru.javarush.cryptoanalyser.likhter.controller;
 
-import ru.javarush.cryptoanalyser.likhter.commands.Action;
-import ru.javarush.cryptoanalyser.likhter.commands.Decoder;
-import ru.javarush.cryptoanalyser.likhter.commands.Encoder;
+import ru.javarush.cryptoanalyser.likhter.commands.*;
 
 public enum Actions {
     ENCODE(new Encoder()),
-    DECODE(new Decoder());
-    //TODO brute and snalyse
-   // BRUTE_FORCE(action),
-    //ANALYSE(action)
-
+    DECODE(new Decoder()),
+    BRUTEFORCE(new BruteForce()),
+    ANALYSE(new Analyse());
     private final Action action;
 
     Actions(Action action) {
