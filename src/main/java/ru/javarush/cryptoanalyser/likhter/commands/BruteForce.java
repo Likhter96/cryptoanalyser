@@ -1,74 +1,81 @@
 package ru.javarush.cryptoanalyser.likhter.commands;
-import ru.javarush.cryptoanalyser.likhter.constants.Alphabet;
+
 import ru.javarush.cryptoanalyser.likhter.entity.Result;
 import ru.javarush.cryptoanalyser.likhter.entity.ResultCode;
 import ru.javarush.cryptoanalyser.likhter.exeption.ApplicationExeption;
 import ru.javarush.cryptoanalyser.likhter.util.PathFinder;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static ru.javarush.cryptoanalyser.likhter.constants.Alphabet.ALPHABET;
 
 public class BruteForce implements Action {
+    static int key;
 
     @Override
     public Result execute(String[] parameters) {
         Path input = PathFinder.getRoot(parameters[0]);
         Path output = PathFinder.getRoot(parameters[1]);
-        int key = 0;
-        int spaceCount = 0;
-        char space = ' ';
-        for (int keyCount = 0; key < Alphabet.ALPHABET_ARRAY.length; keyCount++) {
-            int spaceCounter = countCharInFile(input, key, space);
-            if (spaceCounter > spaceCount) {
-                spaceCount = spaceCounter;
-                key = keyCount;
-            }
-        }
-        fileWriter(input, output, key);
-        return new Result(ResultCode.OK, "BruteForce use key: " + key);
-    }
-    private int countCharInFile(Path input, int key, char space) {
-        int spaceCount = 0;
-        try (BufferedReader reader = Files.newBufferedReader(input)) {
-            int value;
-            while ((value = reader.read()) > -1) {
-                char character = (char) value;
-                if (Alphabet.ALPHABET_MAP.containsKey(character)) {
-                    int index = Alphabet.ALPHABET_MAP.get(character);
-                    index = (index + key + Alphabet.ALPHABET_ARRAY.length) % Alphabet.ALPHABET_ARRAY.length;
-                    if (Alphabet.ALPHABET_ARRAY[index] == space) {
-                        spaceCount++;
+        StringBuilder builder = new StringBuilder();
+        try (
+                BufferedReader reader = Files.newBufferedReader(input);
+                BufferedWriter writer = Files.newBufferedWriter(output)
+        ) {
+            for (int i = 1; i < ALPHABET.length() - 1; i++) {
+                reader.mark(9999999);
+                while (reader.ready()) {
+                    int startByte = reader.read();
+                    char startChar = (char) startByte;
+                    if (ALPHABET.indexOf(startChar) != -1) {
+                        int alphabetIndex = ALPHABET.indexOf(startChar);
+                        int decryptedIndex = (alphabetIndex - i) % ALPHABET.length();
+                        if (decryptedIndex < 0) {
+                            decryptedIndex += ALPHABET.length();
+                        }
+                        char character = ALPHABET.charAt(decryptedIndex);
+                        writer.write(character);
+                        builder.append(character);
                     }
                 }
-            }
-        } catch (IOException e) {
-            throw new ApplicationExeption("File not found ", e);
-        }
-        return spaceCount;
-    }
-    private void fileWriter(Path input, Path output, int key) {
-        try (BufferedReader reader = Files.newBufferedReader(input);
-             BufferedWriter writer = Files.newBufferedWriter(output)
-        ) {
-            int value;
-            int length = Alphabet.ALPHABET_ARRAY.length;
-            while ((value = reader.read()) > -1) {
-                char character = (char) value;
-                character = Character.toLowerCase(character);
-                if (Alphabet.ALPHABET_MAP.containsKey(character)) {
-                    Integer index = Alphabet.ALPHABET_MAP.get(character);
-                    index = (index - key) % length;
-                    writer.write(Alphabet.ALPHABET_ARRAY[index]);
-                } else if (character == '\n') {
-                    writer.write(character);
-                } else if (!Alphabet.ALPHABET_MAP.containsKey(character)) {
-                    writer.write(character);
+                Pattern pattern = Pattern.compile(", [а-яА-Я]");
+                Matcher matcher = pattern.matcher(builder);
+                if (matcher.find()) {
+                    key = i;
+                    bruteText(input, output);
+                    break;
                 }
             }
         } catch (IOException e) {
-            throw new ApplicationExeption("File not found ", e);
+            throw new ApplicationExeption(e.getMessage());
+        }
+        return new Result(ResultCode.OK, "BruteForce use key: " + key);
+    }
+
+    private void bruteText(Path input, Path output) {
+        try (BufferedReader reader1 = Files.newBufferedReader(input);
+             BufferedWriter writer1 = Files.newBufferedWriter(output)
+        ) {
+            while (reader1.ready()) {
+                int indexOfOriginalChar = reader1.read();
+                char originalChar = (char) indexOfOriginalChar;
+                if (ALPHABET.indexOf(indexOfOriginalChar) != -1) {
+                    int origCharIndexInAlphabet = ALPHABET.indexOf(originalChar);
+                    int decryptedIndex = (origCharIndexInAlphabet - key) % ALPHABET.length();
+                    if (decryptedIndex < 0) {
+                        decryptedIndex += ALPHABET.length();
+                    }
+                    char newCharacter = ALPHABET.charAt(decryptedIndex);
+                    writer1.write(newCharacter);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

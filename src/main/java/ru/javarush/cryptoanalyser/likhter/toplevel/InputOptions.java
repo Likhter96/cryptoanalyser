@@ -21,7 +21,7 @@ public class InputOptions {
             case 2 -> decode;
             case 3 -> bruteforce;
             case 4 -> analyse;
-            default -> throw new IllegalStateException(" value: " + option);
+            default -> throw new IllegalStateException(" command not found, try again: " + option);
         };
     }
 }

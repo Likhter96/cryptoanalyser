@@ -1,11 +1,9 @@
 package ru.javarush.cryptoanalyser.likhter.commands;
-
 import ru.javarush.cryptoanalyser.likhter.constants.Alphabet;
 import ru.javarush.cryptoanalyser.likhter.entity.Result;
 import ru.javarush.cryptoanalyser.likhter.entity.ResultCode;
 import ru.javarush.cryptoanalyser.likhter.exeption.ApplicationExeption;
 import ru.javarush.cryptoanalyser.likhter.util.PathFinder;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;

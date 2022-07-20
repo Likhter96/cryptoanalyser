@@ -1,64 +1,50 @@
 package ru.javarush.cryptoanalyser.likhter.commands;
 
-import ru.javarush.cryptoanalyser.likhter.constants.Alphabet;
 import ru.javarush.cryptoanalyser.likhter.entity.Result;
 import ru.javarush.cryptoanalyser.likhter.entity.ResultCode;
 import ru.javarush.cryptoanalyser.likhter.exeption.ApplicationExeption;
 import ru.javarush.cryptoanalyser.likhter.util.PathFinder;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class Analyse implements Action{
+public class Analyse implements Action {
     @Override
     public Result execute(String[] parameters) {
         String encodeFile = parameters[0];
         String dictionaryFile = parameters[1];
-        String analyzedFile = parameters[2];
-        List<Character> sourceChar = getSortedChars(encodeFile);
-        List<Character> dictChar = getSortedChars(dictionaryFile);
-        Path source = PathFinder.getRoot(encodeFile);
-        Path target = PathFinder.getRoot(analyzedFile);
-        try (
-                BufferedReader reader = Files.newBufferedReader(source);
-                BufferedWriter writer = Files.newBufferedWriter(target)
-        ) {
-            int value;
-            while ((value = reader.read()) > -1) {
-                char character = (char) value;
-                int index = sourceChar.indexOf(character);
-                Character characterDecrypted = dictChar.get(index);
-                writer.write(characterDecrypted != null ? characterDecrypted : character);
-            }
+        String analyseWriteFile = parameters[2];
+        Path input = PathFinder.getRoot(encodeFile);
+        Path dictionary = PathFinder.getRoot(dictionaryFile);
+        Path output = PathFinder.getRoot(analyseWriteFile);
+        CharCounter read = new CharCounter();
+        Map<Character, Integer> statisticSymbolsEncodedFile = read.countOfChar(input);
+        Map<Character, Integer> statisticSymbolsDecodedFile = read.countOfChar(dictionary);
+        String reader;
+        try {
+            reader = Files.readString(input);
         } catch (IOException e) {
-            throw new ApplicationExeption(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
-        return new Result(ResultCode.OK, analyzedFile);
-    }
-    private List<Character> getSortedChars(String encryptedFile) {
-        Map<Character, Integer> map = createStartMap();
-        Path path = PathFinder.getRoot(encryptedFile);
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
-            int value;
-            while ((value = reader.read()) > -1) {
-                char character = (char) value;
-                character = Character.toLowerCase(character);
-                if (map.containsKey(character)) {
-                    Integer i = map.get(character);
-                    map.put(character, ++i);
+        char[] encodedFileToChar = reader.toCharArray();
+        List<Character> countForEnterSymbolsToEncFile = new ArrayList<>(statisticSymbolsEncodedFile.keySet());
+        List<Character> countForEnterSymbolsToDecFile = new ArrayList<>(statisticSymbolsDecodedFile.keySet());
+
+        for (int i = 0; i < countForEnterSymbolsToEncFile.size(); i++) {
+            for (int j = 0; j < encodedFileToChar.length; j++) {
+                int x = Character.compare(countForEnterSymbolsToEncFile.get(i), encodedFileToChar[j]);
+                if (x == 0) {
+                    encodedFileToChar[j] = countForEnterSymbolsToDecFile.get(i);
                 }
             }
-        } catch (IOException e) {
-            throw new ApplicationExeption(e.getMessage(), e);
         }
-        return map.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).map(Map.Entry::getKey).toList();
-    }
-    private Map<Character, Integer> createStartMap() {
-        return Alphabet.ALPHABET_MAP.keySet().stream().collect(Collectors.toMap(character -> character, character -> 0, (a, b) -> b, LinkedHashMap::new));
+        try {
+            Files.writeString(output, String.valueOf(encodedFileToChar));
+        } catch (IOException e) {
+            throw new ApplicationExeption("IO error", e);
+        }
+        return new Result(ResultCode.OK, "analyse write to " + parameters[2]);
     }
 }
